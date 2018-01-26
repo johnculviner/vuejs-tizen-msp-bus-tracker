@@ -3,13 +3,22 @@ A Vue.js app running as a Tizen Web Application to track MetroTransit bus geo-lo
 
 Biggest goals were rapid development and avoiding using TizenStudio all-together since I was having trouble with it.
 
-## Build Setup
+## Doin stuff
+
+- make sure you have TizenStudio installed (or at least the CLI stuff) with some important stuff in your .(bash|zsh)rc 
+``` bash
+export PATH="$HOME/tizen-studio/tools:$PATH"
+export PATH="$HOME/tizen-studio/tools/ide/bin:$PATH"
+export PATH="$HOME/tizen-studio/tools/emulator/bin:$PATH"
+```
+
 
 ``` bash
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:8080 (looks like a pretend watch minus the Tizen APIs but hey you can debug!)
+# serve with hot reload at localhost:8080
+# (looks like a pretend watch minus the Tizen APIs but hey you can debug and live reload!)
 npm run dev
 
 # build for production with minification
