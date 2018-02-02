@@ -15,11 +15,6 @@ export default {
 }
 
 console.log('Bus Tracker Started!')
-
-window.addEventListener('tizenhwkey', function (e) {
-  console.log('Exiting Bus Tracker!')
-  tizen.application.getCurrentApplication().exit()
-})
 </script>
 
 <style>

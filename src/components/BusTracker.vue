@@ -3,14 +3,17 @@
     <button v-on:click="nextStop" class="route-selector">
       <div>{{currentStop.route}} @</div>
       <div>{{currentStop.location}}</div>
+      <div class="position-indicators">
+        <div class="position-indicator" v-bind:class="{ active: stop === currentStop }" v-bind:key="stop.stopNumber" v-for="stop in stops"></div>
+      </div>
     </button>
     <div class="view">
       <h2>
         {{nowString}}&nbsp;
-        ⚙ :{{30 - Math.round((new Date() - lastUpdate) / 1000)}}
+        ⚙ :{{getTimeTillRefresh()}}
       </h2>
       <div v-if="isRefreshing" class="cog">⚙</div>
-      <h3 class="no-busses" v-if="!times.length">No scheduled buses</h3>
+      <h3 class="no-busses" v-if="!times.length">No scheduled buses!</h3>
       <ul>
         <li v-bind:key="x.scheduledDeparture" class="time" v-for="x in times">
           <span class="route">{{ x.route }}</span>
@@ -36,7 +39,10 @@ import get from 'lodash.get'
 
 const stops = [
   {route: '6', location: '50th & Xerxes', stopNumber: 6243, lat: 44.912357, long: -93.318793},
-  {route: '146', location: 'Marquette & 10th', stopNumber: 53305, lat: 44.973523, long: -93.273283}
+  {route: '6', location: '44th & France', stopNumber: 1292, lat: 44.921891, long: -93.329013},
+  {route: '146', location: 'Marquette & 10th', stopNumber: 53305, lat: 44.973523, long: -93.273283},
+  {route: '146', location: 'Marquette & 4th', stopNumber: 53302, lat: 44.979315, long: -93.268434},
+  {route: '6', location: 'Hennepin & 10th', stopNumber: 17924, lat: 44.975879, long: -93.277893}
 ]
 
 export default {
@@ -51,23 +57,35 @@ export default {
     }
   },
   created () {
+    // attach event handlers
     Tizen('power.request', x => x('SCREEN', 'SCREEN_NORMAL'))
-
-    this.refreshCurrentStop()
+    document.addEventListener('rotarydetent', ev => ev.detail.direction === 'CW' ? this.nextStop() : this.prevStop())
     setInterval(() => {
       this.nowString = new Date().toLocaleTimeString()
-
       if (new Date() - this.lastUpdate > 30000) {
         this.refreshCurrentStop()
       }
     }, 1000)
+    document.addEventListener('tizenhwkey', function (e) {
+      console.log('Exiting Bus Tracker!')
+      tizen.application.getCurrentApplication().exit()
+    })
+
+    this.refreshCurrentStop()
   },
   methods: {
+    getTimeTillRefresh () {
+      const time = 30 - Math.round((new Date() - this.lastUpdate) / 1000)
+      return time < 10 ? `0${time}` : time
+    },
     nextStop () {
       this.currentStop = stops[stops.indexOf(this.currentStop) + 1]
-      if (!this.currentStop) {
-        this.currentStop = stops[0]
-      }
+      if (!this.currentStop) { this.currentStop = stops[0] }
+      this.refreshCurrentStop()
+    },
+    prevStop () {
+      this.currentStop = stops[stops.indexOf(this.currentStop) - 1]
+      if (!this.currentStop) { this.currentStop = stops[stops.length - 1] }
       this.refreshCurrentStop()
     },
     refreshCurrentStop () {
@@ -149,6 +167,20 @@ button {
 .route-selector {
   top: 0;
   padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.position-indicator {
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  background-color: #666666;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+
+.active {
+  background-color: white;
 }
 
 .refresh-stop {
@@ -160,7 +192,7 @@ button {
 }
 
 .view {
-  padding-top: 40px;
+  padding-top: 60px;
   padding-bottom: 40px;
   font-size: 1.2em;
 }
